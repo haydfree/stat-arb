@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Statistical Arbitrage Tool</title>
+    <link rel="stylesheet" type="text/css" href="../static/style.css">
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/5.0.10/css/tabulator.min.css" rel="stylesheet">
+  </head>
+  <body>
+  <div id="header"><h1>STATISTICAL ARBITRAGE TOOL</h1></div>
+    <form action="/" method="post">
+    <div class="grid-container">
+        <div class="grid-item">
+            <label>DATA SOURCE
+                <select name="dataSource">
+                    <option name="yahoo" value="yahoo" selected>Yahoo Finance</option>
+                </select>
+            </label>
+        </div>
+        <div class="grid-item">
+            <label>INSTRUMENT 1
+            <select name="instrument1">
+                <option name="AAPL" value="AAPL" selected>Apple</option>
+                <option name="MSFT" value="MSFT" >Microsoft</option>
+                <option name="GOOG" value="GOOG" >Google</option>
+                <option name="META" value="META" >Meta</option>
+                <option name="SPY" value="SPY" >S&P 500 ETF</option>
+                <option name="QQQ" value="QQQ" >Invesco QQQ Trust</option>
+                <option name="TSLA" value="TSLA" >Tesla</option>
+                <option name="NVDA" value="NVDA" >NVIDIA</option>
+                <option name="AMZN" value="AMZN" >Amazon</option>
+                <option name="NFLX" value="NFLX" >Netflix</option>
+                <option name="AMD" value="AMD" >Advanced Micro Devices</option>
+                <option name="PEP" value="PEP" >PepsiCo</option>
+                <option name="KO" value="KO" >The Coca-Cola Company</option>
+                <option name="MA" value="MA" >Mastercard</option>
+                <option name="V" value="V" >Visa</option>
+            </select>
+            </label>
+        </div>
+        <div class="grid-item">
+            <label>INSTRUMENT 2
+            <select name="instrument2">
+                <option name="AAPL" value="AAPL" >Apple</option>
+                <option name="MSFT" value="MSFT" selected>Microsoft</option>
+                <option name="GOOG" value="GOOG" >Google</option>
+                <option name="META" value="META" >Meta</option>
+                <option name="SPY" value="SPY" >S&P 500 ETF</option>
+                <option name="QQQ" value="QQQ" >Invesco QQQ Trust</option>
+                <option name="TSLA" value="TSLA" >Tesla</option>
+                <option name="NVDA" value="NVDA" >NVIDIA</option>
+                <option name="AMZN" value="AMZN" >Amazon</option>
+                <option name="NFLX" value="NFLX" >Netflix</option>
+                <option name="AMD" value="AMD" >Advanced Micro Devices</option>
+                <option name="PEP" value="PEP" >PepsiCo</option>
+                <option name="KO" value="KO" >The Coca-Cola Company</option>
+                <option name="MA" value="MA" >Mastercard</option>
+                <option name="V" value="V" >Visa</option>
+            </select>
+            </label>
+        </div>
+        <div class="grid-item">
+            <label>START DATE<input type="text" name="startDate" placeholder="2000-01-01" value="2000-01-01"></label>
+        </div>
+        <div class="grid-item">
+            <label>END DATE<input type="text" name="endDate" placeholder="2024-04-05" value="2024-04-05"></label>
+        </div>
+        <div class="grid-item">
+            <label>TIMEFRAME
+                <select type="text" name="timeframe">
+                    <option name="1m" value="1m">1 minute timeframe</option>
+                    <option name="5m" value="5m">5 minute timeframe</option>
+                    <option name="15m" value="15m">15 minute timeframe</option>
+                    <option name="1h" value="1h">1 hour timeframe</option>
+                    <option name="1d" value="1d" selected>1 day timeframe</option>
+                </select>
+            </label>
+        </div>
+        <div class="grid-item">
+            <label>ENTRY THRESHOLD<input type="text" name="entryThreshold" placeholder="2" value="2"></label>
+        </div>
+        <div class="grid-item">
+            <label>WINDOW SIZE<input type="text" name="window" placeholder="50" value="50"></label>
+        </div>
+        <div class="grid-item" id="runButton-container">
+            <label id="blank">.</label>
+            <button type="submit" id="runButton">RUN</button>
+        </div>
+    </div>
+</form>
+<div id="tradesToday">
+    {% for trade in tradesToday %}
+        {{ trade }}
+    {% endfor %}
+</div>
+<div id="modelAccuracy">
+    {{ modelAccuracy | safe }}
+</div>
+<div class="table-container" id="table">
+{% if closedTradesInfo %}
+    {{ closedTradesInfo | safe }}
+{% endif %}
+</div>
+<div id="plots-container">
+    {% if plot1Img %}
+    <div>
+        <img src="data:image/png;base64,{{ plot1Img }}" alt="Plot 1" class="plot-image">
+    </div>
+    {% endif %}
+
+    {% if plot2Img %}
+    <div>
+        <img src="data:image/png;base64,{{ plot2Img }}" alt="Plot 2" class="plot-image">
+    </div>
+    {% endif %}
+
+    {% if plot3Img %}
+    <div>
+        <img src="data:image/png;base64,{{ plot3Img }}" alt="Plot 3"class="plot-image">
+    </div>
+    {% endif %}
+    {% if error %}
+    <div>
+        <h2>Error</h2>
+        <p>{{ error }}</p>
+    </div>
+    {% endif %}
+</div>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const error = "{{error}}";
+    if (error && error !== "None") {
+        alert(error);
+    }
+    const runButton = document.getElementById('runButton');
+        const closedTradesInfo = document.getElementById('table');
+
+        runButton.addEventListener('click', function () {
+            closedTradesInfo.style.display = 'block';
+        });
+    let ascending = true;
+
+    function sortTable(columnIndex) {
+        const table = document.querySelector(".table-container table");
+        const rows = Array.from(table.querySelectorAll('tbody tr'));
+        rows.sort((a, b) => {
+            let x = a.cells[columnIndex].textContent.trim();
+            let y = b.cells[columnIndex].textContent.trim();
+            if (!isNaN(x) && !isNaN(y)) {
+                return ascending ? (parseFloat(x) - parseFloat(y)) : (parseFloat(y) - parseFloat(x));
+            } else {
+                return ascending ? x.localeCompare(y) : y.localeCompare(x);
+            }
+        });
+        rows.forEach(row => table.querySelector('tbody').appendChild(row));
+        ascending = !ascending;
+    }
+
+    const headers = document.querySelectorAll(".table-container th");
+    headers.forEach((header, index) => {
+        header.addEventListener("click", () => sortTable(index));
+    });
+});
+
+</script>
+
+
+
+
+
+  </body>
+</html>
